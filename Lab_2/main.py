@@ -1,33 +1,28 @@
 import pandas
 from keras import Sequential
-from keras.src.layers import Dense
 from sklearn.preprocessing import LabelEncoder
-from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.layers import Dense
 import matplotlib.pyplot as plot
 
 # Загрузка данных из файла
-dataframe = pandas.read_csv("iris.csv", header=None)
+dataframe = pandas.read_csv("sonar.csv", header=None)
 dataset = dataframe.values
-X = dataset[:,0:4].astype(float)
-Y = dataset[:,4]
+X = dataset[:, 0:60].astype(float)
+Y = dataset[:, 60]
 
-# Преобразуем данные в форму, подходящую для работы в библиотеках нейронных сетей (тензоры)
 encoder = LabelEncoder()
-encoded_Y = encoder.fit_transform(Y)
-dummy_y = to_categorical(encoded_Y)
+encoder.fit(Y)
+encoded_Y = encoder.transform(Y)
 
-# Создание модели нейронной сети
 model = Sequential()
-model.add(Dense(4, activation="relu"))
-model.add(Dense(40, activation="relu"))
-model.add(Dense(3, activation="softmax"))
+model.add(Dense(60, activation='relu'))
+model.add(Dense(30, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
 
-# Параметры обучения
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-# Обучение сети
-train_history = model.fit(X, dummy_y, epochs=200, batch_size=10, validation_split=0.1)
+model.compile(optimizer='adam',loss='binary_crossentropy', metrics=['accuracy'])
 
+train_history = model.fit(X, encoded_Y, epochs=200, batch_size=10, validation_split=0.1)
 
 # График ошибок
 plot.plot(train_history.epoch, train_history.history['loss'], label="Training Loss")
